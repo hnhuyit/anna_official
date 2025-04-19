@@ -19,7 +19,7 @@ const CHAT_HISTORY_TABLE = "ChatHistory";
  * @param {string} params.message - Nội dung tin nhắn.
  * @returns {Promise<Object>} - Thông tin record vừa tạo.
  */
-export async function saveMessage({ userId, role, message, platform = "unknown"}) {
+export async function saveMessage({ userId, senderName = "", role, message, platform = "unknown"}) {
   try {
     const record = await base(CHAT_HISTORY_TABLE).create({
       UserID: userId,

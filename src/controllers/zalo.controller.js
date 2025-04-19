@@ -35,14 +35,14 @@ export async function handleZaloWebhook(req, res, next) {
     const platform = "zalo";
 
     // Lưu lịch sử tin nhắn, cập nhật interaction nếu cần (bạn có thể tách riêng sang airtableService)
-    await saveMessage({ userId, role: "user", message: userMessage, platform });
-    await updateLastInteractionOnlyIfNewDay(userId, event_name, platform);
+    await saveMessage({ userId, senderName: "", role: "user", message: userMessage, platform });
+    await updateLastInteractionOnlyIfNewDay(userId, "", event_name, platform);
     
     const history = await getRecentMessages(userId, platform);
     if (event_name === "user_send_text") {
       console.log(`Bạn vừa gửi: "${userMessage}"`);
       const aiReply = await handleAIReply(userId, userMessage, SYSTEM_PROMPT, history, token, platform);
-      await saveMessage({ userId, role: "assistant", message: aiReply, platform });
+      await saveMessage({ userId, senderName: "", role: "assistant", message: aiReply, platform });
     } else {
       // Xử lý các loại nội dung khác:
       const unsupportedTypes = [

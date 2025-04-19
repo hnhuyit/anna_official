@@ -15,7 +15,7 @@ const config = {
 
 // Thiết lập Airtable base
 const base = new Airtable({ apiKey: config.airtableApiKey }).base(config.baseId);
-const TABLE_NAME = "Customers";
+const TABLE_NAME = "Conversations";
 
 // Lưu trữ token hiện tại (có thể khởi tạo từ biến môi trường)
 let cachedToken = config.oaAccessToken || "";
@@ -69,14 +69,14 @@ export function getOAToken() {
   return cachedToken;
 }
 
-export async function updateLastInteractionOnlyIfNewDay(userId, event_name, platform = "unknown") {
+export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_name, platform = "unknown") {
   try {
     const todayISOString = new Date().toISOString();
     const today = todayISOString.slice(0, 10); // yyyy-mm-dd
     const platformTag = platform.toLowerCase();
 
     const filterFormula = `AND(
-      {ZaloUID} = '${userId}',
+      {UserID} = '${userId}',
       {platform} = '${platformTag}'
     )`;
 
@@ -93,8 +93,8 @@ export async function updateLastInteractionOnlyIfNewDay(userId, event_name, plat
       await base(TABLE_NAME).create([
         {
           fields: {
-            ZaloUID: userId,
-            // Name: userName,
+            UserID: userId,
+            Name: userName,
             platform: platformTag,
             last_event: event_name,
             LastInteraction: todayISOString,

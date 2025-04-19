@@ -31,7 +31,6 @@ export async function verifyWebhookIG(req, res) {
   }
 
 }
-
 export async function verifyWebhookFB(req, res) {
   // // Đơn giản trả về echostr nếu có logic xác thực cho GET webhook
   // const { hub: { challenge } } = req.query;
@@ -55,7 +54,6 @@ export async function verifyWebhookFB(req, res) {
     }
   }
 }
-
 export async function verifyWebhookMessager(req, res) {
   
   // Parse the query params
@@ -76,6 +74,7 @@ export async function verifyWebhookMessager(req, res) {
     }
   }
 }
+
 export async function handleFacebookWebhook(req, res, next) {
   try {
     const body = req.body;
@@ -105,7 +104,7 @@ export async function handleFacebookWebhook(req, res, next) {
       // ✅ Xử lý tin nhắn Messenger như trước
       if (webhook_event) {
         const sender_psid = webhook_event?.sender?.id;
-        // const recipient_id = webhook_event?.recipient?.id;
+        const senderName = webhook_event.sender?.name;
         const message = webhook_event?.message;
 
         // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
@@ -124,13 +123,14 @@ export async function handleFacebookWebhook(req, res, next) {
           // Lưu tin nhắn người dùng
           await saveMessage({
             userId: sender_psid,
+            senderName: senderName,
             role: "user",
             message: userMessage,
             platform
           });
 
           // ✅ Lưu lần tương tác gần nhất
-          await updateLastInteractionOnlyIfNewDay(sender_psid, "message_received", platform);
+          await updateLastInteractionOnlyIfNewDay(sender_psid, senderName, "message_received", platform);
 
           // Lấy lịch sử
           const history = await getRecentMessages(sender_psid, platform);
@@ -148,6 +148,7 @@ export async function handleFacebookWebhook(req, res, next) {
           // Lưu phản hồi AI
           await saveMessage({
             userId: sender_psid,
+            senderName: senderName,
             role: "assistant",
             message: aiReply,
             platform
@@ -168,7 +169,7 @@ export async function handleFacebookWebhook(req, res, next) {
           const parentId = value.parent_id;
 
           const senderId = value.from?.id;
-          // const senderName = value.from?.name;
+          const senderName = value.from?.name;
           const message = value.message;
 
           
@@ -195,6 +196,7 @@ export async function handleFacebookWebhook(req, res, next) {
 
           console.log("💬 Comment mới:", {
             senderId,
+            senderName,
             commentId,
             postId,
             message
@@ -202,12 +204,13 @@ export async function handleFacebookWebhook(req, res, next) {
 
           await saveMessage({
             userId: senderId,
+            senderName: senderName,
             role: "user",
             message,
             platform
           });
 
-          await updateLastInteractionOnlyIfNewDay(senderId, "comment_received", platform);
+          await updateLastInteractionOnlyIfNewDay(senderId, senderName, "comment_received", platform);
 
           // Lấy lịch sử
           const history = await getRecentMessages(senderId, platform);
@@ -218,6 +221,7 @@ export async function handleFacebookWebhook(req, res, next) {
           // Lưu phản hồi AI
           await saveMessage({
             userId: senderId,
+            senderName: senderName,
             role: "assistant",
             message: aiCommentReply,
             platform
@@ -235,61 +239,61 @@ export async function handleFacebookWebhook(req, res, next) {
   }
 }
 
-export async function handleMessagerWebhook(req, res) {
-  try {
-    const body = req.body;
+// export async function handleMessagerWebhook(req, res) {
+//   try {
+//     const body = req.body;
     
-    if (body.object !== 'page') {
-      return res.sendStatus(404);
-    }
+//     if (body.object !== 'page') {
+//       return res.sendStatus(404);
+//     }
 
-    // body.entry.forEach(entry => {
-    //     const webhook_event = entry.messaging[0]; // console.log("New Event:", webhook_event, process.env.PAGE_ACCESS_TOKEN);
-    //     const sender_psid = webhook_event.sender.id;
+//     // body.entry.forEach(entry => {
+//     //     const webhook_event = entry.messaging[0]; // console.log("New Event:", webhook_event, process.env.PAGE_ACCESS_TOKEN);
+//     //     const sender_psid = webhook_event.sender.id;
 
-    //     if (webhook_event.message) {
-    //       handleMessage(sender_psid, webhook_event.message);
-    //     } else if (webhook_event.postback) {
-    //       handlePostback(sender_psid, webhook_event.postback);
-    //     }
-    // });
+//     //     if (webhook_event.message) {
+//     //       handleMessage(sender_psid, webhook_event.message);
+//     //     } else if (webhook_event.postback) {
+//     //       handlePostback(sender_psid, webhook_event.postback);
+//     //     }
+//     // });
 
-    for (const entry of body.entry) {
-      const webhook_event = entry.messaging[0];
-      const sender_psid = webhook_event.sender.id;
+//     for (const entry of body.entry) {
+//       const webhook_event = entry.messaging[0];
+//       const sender_psid = webhook_event.sender.id;
 
-      if (webhook_event.message && webhook_event.message.text) {
-        const userMessage = webhook_event.message.text;
+//       if (webhook_event.message && webhook_event.message.text) {
+//         const userMessage = webhook_event.message.text;
 
-        // 1. Lấy cấu hình hệ thống (ví dụ như SYSTEM_PROMPT)
-        const config = await fetchConfigFromAirtable();
-        const SYSTEM_PROMPT = config.SYSTEM_PROMPT;
+//         // 1. Lấy cấu hình hệ thống (ví dụ như SYSTEM_PROMPT)
+//         const config = await fetchConfigFromAirtable();
+//         const SYSTEM_PROMPT = config.SYSTEM_PROMPT;
 
-        // 2. Lưu lịch sử người dùng
-        await saveMessage({ userId: sender_psid, role: "user", message: userMessage, platform: "facebook"});
+//         // 2. Lưu lịch sử người dùng
+//         await saveMessage({ userId: sender_psid, role: "user", message: userMessage, platform: "facebook"});
 
-        // 3. Lấy lịch sử gần đây
-        const history = await getRecentMessages(sender_psid, "facebook");
+//         // 3. Lấy lịch sử gần đây
+//         const history = await getRecentMessages(sender_psid, "facebook");
 
-        // 4. Gửi lên OpenAI
-        const aiReply = await handleAIReply(sender_psid, userMessage, SYSTEM_PROMPT, history, process.env.PAGE_ACCESS_TOKEN);
+//         // 4. Gửi lên OpenAI
+//         const aiReply = await handleAIReply(sender_psid, userMessage, SYSTEM_PROMPT, history, process.env.PAGE_ACCESS_TOKEN);
 
-        // 5. Lưu phản hồi
-        await saveMessage({ userId: sender_psid, role: "assistant", message: aiReply, platform: "facebook" });
+//         // 5. Lưu phản hồi
+//         await saveMessage({ userId: sender_psid, role: "assistant", message: aiReply, platform: "facebook" });
 
-        // 6. Gửi lại cho người dùng qua Messenger
-        await replyMessenger(sender_psid, aiReply, process.env.PAGE_ACCESS_TOKEN);
-      } else {
-        await replyMessenger(sender_psid, `❗ Hiện tại, AI chỉ hỗ trợ tin nhắn dạng văn bản.`, process.env.PAGE_ACCESS_TOKEN);
-      }
-    }
+//         // 6. Gửi lại cho người dùng qua Messenger
+//         await replyMessenger(sender_psid, aiReply, process.env.PAGE_ACCESS_TOKEN);
+//       } else {
+//         await replyMessenger(sender_psid, `❗ Hiện tại, AI chỉ hỗ trợ tin nhắn dạng văn bản.`, process.env.PAGE_ACCESS_TOKEN);
+//       }
+//     }
 
-    res.status(200).send('EVENT_RECEIVED');
-  } catch (err) {
-    console.error("🔥 Lỗi webhook Messenger:", err);
-    next(err);
-  }
-}
+//     res.status(200).send('EVENT_RECEIVED');
+//   } catch (err) {
+//     console.error("🔥 Lỗi webhook Messenger:", err);
+//     next(err);
+//   }
+// }
 
 export async function handleIGWebhook(req, res) {
   const body = req.body;

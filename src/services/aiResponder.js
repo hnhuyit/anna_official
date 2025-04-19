@@ -60,7 +60,7 @@ export async function handleAIReply(userId, userMessage, prompt, history, token,
 
     // Gửi cảnh báo cho admin Zalo
     try {
-      const adminZaloId = "9187775818961242155";
+      const adminZaloId = "5601465730751396594";
       await replyZalo(adminZaloId, `⚠️ AI lỗi với user ${userId} (${platform}): ${userMessage}`, token);
     } catch (adminErr) {
       console.error("❌ Lỗi gửi cảnh báo admin:", adminErr.message);
