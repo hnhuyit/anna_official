@@ -96,7 +96,7 @@ export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_
             UserID: userId,
             Name: userName,
             platform: platformTag,
-            last_event: event_name,
+            event_name: event_name,
             LastInteraction: todayISOString,
           },
         },
