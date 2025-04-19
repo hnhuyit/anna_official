@@ -7,8 +7,13 @@ import { saveMessage, getRecentMessages } from "../services/airtableService.js";
 
 export async function verifyWebhook(req, res) {
   // Đơn giản trả về echostr nếu có logic xác thực cho GET webhook
-  const { hub: { challenge } } = req.query;
-  return res.status(200).send(challenge || "Webhook verified");
+  // const { hub: { challenge } } = req.query;
+  // return res.status(200).send(challenge || "Webhook verified");
+  
+  const { event_name, sender, message } = req.body;
+  // ✅ Thành công
+  console.log("✅ Webhook nhận được:", req.body);
+  res.sendStatus(200);
 }
 
 export async function handleZaloWebhook(req, res, next) {
