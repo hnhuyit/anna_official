@@ -22,7 +22,7 @@ const CHAT_HISTORY_TABLE = "ChatHistory";
 export async function saveMessage({ userId, senderName = "", role, message, platform = "unknown"}) {
   try {
     const record = await base(CHAT_HISTORY_TABLE).create({
-      UserID: userId,
+      UserID: [userId], //userId,
       Role: role,
       Message: message,
       Platform: platform,
@@ -46,8 +46,11 @@ export async function saveMessage({ userId, senderName = "", role, message, plat
 export async function getRecentMessages(userId, platform = null, limit = 100) {
   try {
     const formula = platform
-      ? `AND({UserID} = "${userId}", {Platform} = "${platform}")`
-      : `{UserID} = "${userId}"`;
+      // ? `AND({UserID} = "${userId}", {Platform} = "${platform}")`
+      // : `{UserID} = "${userId}"`;
+      
+      ? `AND(UserID = '${userId}', Platform = '${platform}')`
+      : `UserID = '${userId}'`;
 
     const records = await base(CHAT_HISTORY_TABLE)
       .select({

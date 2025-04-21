@@ -2,6 +2,7 @@
 
 import { askAI } from "./aiService.js";
 import { replyZalo, replyMessenger } from "./zaloService.js";
+import { fetchConfigFromAirtable} from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 
 /**
  * Gửi phản hồi về user theo nền tảng
@@ -60,7 +61,10 @@ export async function handleAIReply(userId, userMessage, prompt, history, token,
 
     // Gửi cảnh báo cho admin Zalo
     try {
-      const adminZaloId = "5601465730751396594";
+      
+      const config = await fetchConfigFromAirtable();
+      const adminZaloId = config.adminZaloId;
+      console.log(adminZaloId, `⚠️ AI lỗi với user ${userId} (${platform}): ${userMessage}`, token);
       await replyZalo(adminZaloId, `⚠️ AI lỗi với user ${userId} (${platform}): ${userMessage}`, token);
     } catch (adminErr) {
       console.error("❌ Lỗi gửi cảnh báo admin:", adminErr.message);

@@ -6,11 +6,11 @@ dotenv.config();
 
 // Cấu hình chung từ .env
 const config = {
-  openaiApiKey: process.env.OPENAI_API_KEY,
-  airtableApiKey: process.env.AIRTABLE_API_KEY,
-  baseId: process.env.AIRTABLE_BASE_ID || "app2wbbC0HSYFi7Q2",
-  systemPrompt: process.env.SYSTEM_PROMPT || "Bạn là trợ lý OA.",
-  oaAccessToken: process.env.OA_ACCESS_TOKEN,
+  openaiApiKey: process.env.OPENAI_API_KEY, // ON SERVER
+  airtableApiKey: process.env.AIRTABLE_API_KEY, // ON SERVER
+  baseId: process.env.AIRTABLE_BASE_ID || "app2wbbC0HSYFi7Q2",  // ON SERVER
+  systemPrompt: process.env.SYSTEM_PROMPT || "Bạn là trợ lý OA.", // ON APP 
+  oaAccessToken: process.env.OA_ACCESS_TOKEN, // ON APP
 };
 
 // Thiết lập Airtable base

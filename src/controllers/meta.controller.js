@@ -85,21 +85,14 @@ export async function handleFacebookWebhook(req, res, next) {
 
     const token = process.env.PAGE_ACCESS_TOKEN; // Facebook Page Token (hoặc dùng process.env.PAGE_ACCESS_TOKEN)
     const config = await fetchConfigFromAirtable();
-    
-    // Kiểm tra trạng thái bot
-    if (config.bot_status !== "active") {
-      console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
-      return res.sendStatus(200);
-    }
 
     const SYSTEM_PROMPT = config.SYSTEM_PROMPT;
+    const pageId = config.pageId;
     const platform = "facebook";
 
     for (const entry of body.entry) {
       const webhook_event = entry.messaging?.[0];
       const changes = entry.changes || [];
-
-
       
       // ✅ Xử lý tin nhắn Messenger như trước
       if (webhook_event) {
@@ -108,12 +101,16 @@ export async function handleFacebookWebhook(req, res, next) {
         const message = webhook_event?.message;
 
         // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
-        if (!sender_psid || sender_psid === "543096242213723") {
+        if (!sender_psid || sender_psid === pageId) {
           console.log("⏭️ Bỏ qua event từ chính page bot hoặc thiếu sender.");
           continue;
         }
-
-        // if (!sender_psid) continue;
+        
+        // Kiểm tra trạng thái bot
+        if (config.bot_status !== "active") {
+          console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
+          return res.sendStatus(200);
+        }
 
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
         if (message?.text) {
@@ -218,6 +215,8 @@ export async function handleFacebookWebhook(req, res, next) {
           // 👉 Nếu bạn muốn phản hồi comment bằng AI hoặc gửi comment lại:
           const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
 
+          await replyToComment(commentId, aiCommentReply, token); 
+
           // Lưu phản hồi AI
           await saveMessage({
             userId: senderId,
@@ -227,7 +226,6 @@ export async function handleFacebookWebhook(req, res, next) {
             platform
           });
 
-          await replyToComment(commentId, aiCommentReply, token); // cần viết thêm hàm này nếu cần
         }
       }
 
@@ -238,62 +236,6 @@ export async function handleFacebookWebhook(req, res, next) {
     next(err);
   }
 }
-
-// export async function handleMessagerWebhook(req, res) {
-//   try {
-//     const body = req.body;
-    
-//     if (body.object !== 'page') {
-//       return res.sendStatus(404);
-//     }
-
-//     // body.entry.forEach(entry => {
-//     //     const webhook_event = entry.messaging[0]; // console.log("New Event:", webhook_event, process.env.PAGE_ACCESS_TOKEN);
-//     //     const sender_psid = webhook_event.sender.id;
-
-//     //     if (webhook_event.message) {
-//     //       handleMessage(sender_psid, webhook_event.message);
-//     //     } else if (webhook_event.postback) {
-//     //       handlePostback(sender_psid, webhook_event.postback);
-//     //     }
-//     // });
-
-//     for (const entry of body.entry) {
-//       const webhook_event = entry.messaging[0];
-//       const sender_psid = webhook_event.sender.id;
-
-//       if (webhook_event.message && webhook_event.message.text) {
-//         const userMessage = webhook_event.message.text;
-
-//         // 1. Lấy cấu hình hệ thống (ví dụ như SYSTEM_PROMPT)
-//         const config = await fetchConfigFromAirtable();
-//         const SYSTEM_PROMPT = config.SYSTEM_PROMPT;
-
-//         // 2. Lưu lịch sử người dùng
-//         await saveMessage({ userId: sender_psid, role: "user", message: userMessage, platform: "facebook"});
-
-//         // 3. Lấy lịch sử gần đây
-//         const history = await getRecentMessages(sender_psid, "facebook");
-
-//         // 4. Gửi lên OpenAI
-//         const aiReply = await handleAIReply(sender_psid, userMessage, SYSTEM_PROMPT, history, process.env.PAGE_ACCESS_TOKEN);
-
-//         // 5. Lưu phản hồi
-//         await saveMessage({ userId: sender_psid, role: "assistant", message: aiReply, platform: "facebook" });
-
-//         // 6. Gửi lại cho người dùng qua Messenger
-//         await replyMessenger(sender_psid, aiReply, process.env.PAGE_ACCESS_TOKEN);
-//       } else {
-//         await replyMessenger(sender_psid, `❗ Hiện tại, AI chỉ hỗ trợ tin nhắn dạng văn bản.`, process.env.PAGE_ACCESS_TOKEN);
-//       }
-//     }
-
-//     res.status(200).send('EVENT_RECEIVED');
-//   } catch (err) {
-//     console.error("🔥 Lỗi webhook Messenger:", err);
-//     next(err);
-//   }
-// }
 
 export async function handleIGWebhook(req, res) {
   const body = req.body;

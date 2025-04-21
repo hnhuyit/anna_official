@@ -25,7 +25,7 @@ export async function handleZaloWebhook(req, res, next) {
     const config = await fetchConfigFromAirtable();
 
     // Kiểm tra trạng thái bot
-    if (config.bot_status !== "active") {
+    if (config.bot_status_zalo !== "active") {
       console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
       return res.sendStatus(200);
     }
