@@ -3,7 +3,7 @@ import { handleIGMessage, handleIGPostback } from "../services/instagramService.
 import { handleAIReply } from "../services/aiResponder.js";
 import { replyMessenger  } from "../services/zaloService.js";
 import { replyToComment  } from "../services/facebookService.js";
-import { fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
+import { ensureUserExists, fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 import { saveMessage, getRecentMessages } from "../services/airtableService.js";
 // Các hàm lưu lịch sử, cập nhật Airtable, … có thể được chuyển vào một module riêng (ví dụ airtableService)
 
@@ -54,26 +54,26 @@ export async function verifyWebhookFB(req, res) {
     }
   }
 }
-export async function verifyWebhookMessager(req, res) {
+// export async function verifyWebhookMessager(req, res) {
   
-  // Parse the query params
-  let mode = req.query["hub.mode"];
-  let token = req.query["hub.verify_token"];
-  let challenge = req.query["hub.challenge"];
+//   // Parse the query params
+//   let mode = req.query["hub.mode"];
+//   let token = req.query["hub.verify_token"];
+//   let challenge = req.query["hub.challenge"];
 
-  // Check if a token and mode is in the query string of the request
-  if (mode && token) {
-    // Check the mode and token sent is correct
-    if (mode === "subscribe" && token === "1234567890") {
-      // Respond with the challenge token from the request
-      console.log("WEBHOOK_VERIFIED");
-      res.status(200).send(challenge);
-    } else {
-      // Respond with '403 Forbidden' if verify tokens do not match
-      res.status(403).send("Forbidden – Token mismatch");
-    }
-  }
-}
+//   // Check if a token and mode is in the query string of the request
+//   if (mode && token) {
+//     // Check the mode and token sent is correct
+//     if (mode === "subscribe" && token === "1234567890") {
+//       // Respond with the challenge token from the request
+//       console.log("WEBHOOK_VERIFIED");
+//       res.status(200).send(challenge);
+//     } else {
+//       // Respond with '403 Forbidden' if verify tokens do not match
+//       res.status(403).send("Forbidden – Token mismatch");
+//     }
+//   }
+// }
 
 export async function handleFacebookWebhook(req, res, next) {
   try {
@@ -117,9 +117,12 @@ export async function handleFacebookWebhook(req, res, next) {
           const userMessage = message.text;
           console.log(`📥 Messenger > User gửi: "${userMessage}"`);
 
+          // Đảm bảo user tồn tại trong Conversation
+          const conversationId = await ensureUserExists(sender_psid, platform, senderName);
+
           // Lưu tin nhắn người dùng
           await saveMessage({
-            userId: sender_psid,
+            userId: conversationId,
             senderName: senderName,
             role: "user",
             message: userMessage,
@@ -127,14 +130,14 @@ export async function handleFacebookWebhook(req, res, next) {
           });
 
           // ✅ Lưu lần tương tác gần nhất
-          await updateLastInteractionOnlyIfNewDay(sender_psid, senderName, "message_received", platform);
+          await updateLastInteractionOnlyIfNewDay(conversationId, senderName, "message_received", platform);
 
           // Lấy lịch sử
-          const history = await getRecentMessages(sender_psid, platform);
+          const history = await getRecentMessages(conversationId, platform);
 
           // Gọi AI và gửi phản hồi
           const aiReply = await handleAIReply(
-            sender_psid,
+            conversationId,
             userMessage,
             SYSTEM_PROMPT,
             history,
@@ -144,7 +147,7 @@ export async function handleFacebookWebhook(req, res, next) {
 
           // Lưu phản hồi AI
           await saveMessage({
-            userId: sender_psid,
+            userId: conversationId,
             senderName: senderName,
             role: "assistant",
             message: aiReply,
@@ -198,32 +201,37 @@ export async function handleFacebookWebhook(req, res, next) {
             postId,
             message
           });
+          
+          // Đảm bảo user tồn tại trong Conversation
+          const conversationId = await ensureUserExists(senderId, platform, senderName);
 
           await saveMessage({
-            userId: senderId,
+            userId: conversationId,
             senderName: senderName,
             role: "user",
             message,
-            platform
+            platform,
+            interactionType: true
           });
 
-          await updateLastInteractionOnlyIfNewDay(senderId, senderName, "comment_received", platform);
+          await updateLastInteractionOnlyIfNewDay(conversationId, senderName, "comment_received", platform);
 
           // Lấy lịch sử
-          const history = await getRecentMessages(senderId, platform);
+          const history = await getRecentMessages(conversationId, platform);
 
           // 👉 Nếu bạn muốn phản hồi comment bằng AI hoặc gửi comment lại:
-          const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
+          const aiCommentReply = await handleAIReply(conversationId, message, SYSTEM_PROMPT, history, token, platform);
 
           await replyToComment(commentId, aiCommentReply, token); 
 
           // Lưu phản hồi AI
           await saveMessage({
-            userId: senderId,
+            userId: conversationId,
             senderName: senderName,
             role: "assistant",
             message: aiCommentReply,
-            platform
+            platform,
+            interactionType: true
           });
 
         }

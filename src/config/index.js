@@ -87,24 +87,24 @@ export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_
       })
       .firstPage();
 
-    if (records.length === 0) {
-      console.warn("⚠️ Không tìm thấy user → tạo mới:", userId, platformTag);
+    // if (records.length === 0) {
+    //   console.warn("⚠️ Không tìm thấy user → tạo mới:", userId, platformTag);
 
-      await base(TABLE_NAME).create([
-        {
-          fields: {
-            UserID: userId,
-            Name: userName,
-            platform: platformTag,
-            event_name: event_name,
-            LastInteraction: todayISOString,
-          },
-        },
-      ]);
+    //   await base(TABLE_NAME).create([
+    //     {
+    //       fields: {
+    //         UserID: userId,
+    //         Name: userName,
+    //         platform: platformTag,
+    //         event_name: event_name,
+    //         LastInteraction: todayISOString,
+    //       },
+    //     },
+    //   ]);
 
-      console.log("✅ Đã tạo mới user:", userId, platformTag);
-      return;
-    }
+    //   console.log("✅ Đã tạo mới user:", userId, platformTag);
+    //   return;
+    // }
 
     const record = records[0];
     const oldDate = record.fields.LastInteraction;
@@ -134,6 +134,29 @@ export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_
   }
 }
 
+export async function ensureUserExists(userId, platform, senderName = "") {
+  const formula = `AND({UserID} = '${userId}', {platform} = '${platform}')`;
+
+  const records = await base(TABLE_NAME).select({
+    filterByFormula: formula,
+    maxRecords: 1
+  }).firstPage();
+
+  if (records.length > 0) {
+    return records[0].id; // ✅ Trả về record ID đã có
+  }
+
+  // ❗ Nếu chưa tồn tại → tạo mới
+  const newRecord = await base(TABLE_NAME).create({
+    fields: {
+      UserID: userId,
+      platform: platform,
+      Name: senderName || "(Unknown)"
+    }
+  });
+
+  return newRecord.id;
+}
 
 // Thêm default export cho toàn bộ config nếu cần
 // export default config;
