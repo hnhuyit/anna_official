@@ -134,8 +134,12 @@ export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_
   }
 }
 
-export async function ensureUserExists(userId, platform, senderName = "") {
-  const formula = `AND({UserID} = '${userId}', {platform} = '${platform}')`;
+export async function ensureUserExists(userId, userName, event_name, platform, platform = "unknown") {
+  
+  const todayISOString = new Date().toISOString();
+  const platformTag = platform.toLowerCase();
+  
+  const formula = `AND({UserID} = '${userId}', {platform} = '${platformTag}')`;
 
   const records = await base(TABLE_NAME).select({
     filterByFormula: formula,
@@ -147,13 +151,16 @@ export async function ensureUserExists(userId, platform, senderName = "") {
   }
 
   // ❗ Nếu chưa tồn tại → tạo mới
-  const newRecord = await base(TABLE_NAME).create({
+  const newRecord = await base(TABLE_NAME).create([{
     fields: {
       UserID: userId,
-      platform: platform,
-      Name: senderName || "(Unknown)"
+      Name: userName || "(Unknown)",
+      platform: platformTag,
+      event_name: event_name,
+      LastInteraction: todayISOString,
     }
-  });
+  }]);
+  console.log("✅ Đã tạo mới user:", userId, newRecord);
 
   return newRecord.id;
 }

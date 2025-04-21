@@ -118,7 +118,7 @@ export async function handleFacebookWebhook(req, res, next) {
           console.log(`📥 Messenger > User gửi: "${userMessage}"`);
 
           // Đảm bảo user tồn tại trong Conversation
-          const conversationId = await ensureUserExists(sender_psid, platform, senderName);
+          const conversationId = await ensureUserExists(sender_psid, senderName, "message_received", platform);
           console.log("conversationId", conversationId)
 
           // Lưu tin nhắn người dùng
@@ -204,7 +204,8 @@ export async function handleFacebookWebhook(req, res, next) {
           });
           
           // Đảm bảo user tồn tại trong Conversation
-          const conversationId = await ensureUserExists(senderId, platform, senderName);
+          // const conversationId = await ensureUserExists(senderId, platform, senderName);
+          const conversationId = await ensureUserExists(senderId, senderName, "comment_received", platform);
           console.log("conversationId", conversationId)
           await saveMessage({
             userId: conversationId,
