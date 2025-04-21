@@ -19,17 +19,18 @@ const CHAT_HISTORY_TABLE = "ChatHistory";
  * @param {string} params.message - Nội dung tin nhắn.
  * @returns {Promise<Object>} - Thông tin record vừa tạo.
  */
-export async function saveMessage({ userId, senderName = "", role, message, platform = "unknown"}) {
+export async function saveMessage({ userId, senderName = "", role, message, platform = "unknown", interactionType = false}) {
   try {
-    const record = await base(CHAT_HISTORY_TABLE).create({
+    const record = await base(CHAT_HISTORY_TABLE).create([{
       fields: {
         UserID: [userId],
         Role: role,
         Message: message,
+        interactionType: interactionType,
         Platform: platform,
         Timestamp: new Date().toISOString() // Dùng định dạng ISO để Airtable hiểu
       }
-    });
+    }]);
     console.log("✅ Saved message record:", record);
     return record;
   } catch (error) {
