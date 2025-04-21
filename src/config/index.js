@@ -69,7 +69,7 @@ export function getOAToken() {
   return cachedToken;
 }
 
-export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_name, platform = "unknown") {
+export async function updateLastInteractionOnlyIfNewDay(userId, userName = "", event_name, platform = "unknown") {
   try {
     const todayISOString = new Date().toISOString();
     const today = todayISOString.slice(0, 10); // yyyy-mm-dd
@@ -134,7 +134,7 @@ export async function updateLastInteractionOnlyIfNewDay(userId, userName, event_
   }
 }
 
-export async function ensureUserExists(userId, userName, event_name, platform, platform = "unknown") {
+export async function ensureUserExists(userId, userName, event_name, platform = "unknown") {
   
   const todayISOString = new Date().toISOString();
   const platformTag = platform.toLowerCase();
