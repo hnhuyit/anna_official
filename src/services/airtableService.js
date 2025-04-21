@@ -22,7 +22,7 @@ const CHAT_HISTORY_TABLE = "ChatHistory";
 export async function saveMessage({ userId, senderName = "", role, message, platform = "unknown"}) {
   try {
     const record = await base(CHAT_HISTORY_TABLE).create({
-      UserID: {id: userId}, //userId,
+      UserID: [{id: userId}], //userId,
       Role: role,
       Message: message,
       Platform: platform,

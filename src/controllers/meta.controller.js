@@ -206,6 +206,7 @@ export async function handleFacebookWebhook(req, res, next) {
           // Đảm bảo user tồn tại trong Conversation
           // const conversationId = await ensureUserExists(senderId, platform, senderName);
           const conversationId = await ensureUserExists(senderId, senderName, "comment_received", platform);
+          
           console.log("conversationId", conversationId)
           await saveMessage({
             userId: conversationId,
