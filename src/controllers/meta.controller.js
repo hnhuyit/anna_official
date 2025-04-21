@@ -131,14 +131,14 @@ export async function handleFacebookWebhook(req, res, next) {
           });
 
           // ✅ Lưu lần tương tác gần nhất
-          await updateLastInteractionOnlyIfNewDay(userId, senderName, "message_received", platform);
+          await updateLastInteractionOnlyIfNewDay(sender_psid, senderName, "message_received", platform);
 
           // Lấy lịch sử
-          const history = await getRecentMessages(userId, platform);
+          const history = await getRecentMessages(sender_psid, platform);
 
           // Gọi AI và gửi phản hồi
           const aiReply = await handleAIReply(
-            userId,
+            sender_psid,
             userMessage,
             SYSTEM_PROMPT,
             history,
