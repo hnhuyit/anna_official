@@ -207,7 +207,7 @@ export async function handleFacebookWebhook(req, res, next) {
           // const conversationId = await ensureUserExists(senderId, platform, senderName);
           const conversationId = await ensureUserExists(senderId, senderName, "comment_received", platform);
           
-          console.log("conversationId", conversationId)
+          // console.log("conversationId", conversationId)
           await saveMessage({
             userId: conversationId,
             senderName: senderName,
@@ -217,13 +217,13 @@ export async function handleFacebookWebhook(req, res, next) {
             interactionType: true
           });
 
-          await updateLastInteractionOnlyIfNewDay(conversationId, senderName, "comment_received", platform);
+          await updateLastInteractionOnlyIfNewDay(senderId, senderName, "comment_received", platform);
 
           // Lấy lịch sử
-          const history = await getRecentMessages(conversationId, platform);
+          const history = await getRecentMessages(senderId, platform);
 
           // 👉 Nếu bạn muốn phản hồi comment bằng AI hoặc gửi comment lại:
-          const aiCommentReply = await handleAIReply(conversationId, message, SYSTEM_PROMPT, history, token, platform);
+          const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
 
           await replyToComment(commentId, aiCommentReply, token); 
 
