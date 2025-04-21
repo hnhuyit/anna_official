@@ -22,11 +22,13 @@ const CHAT_HISTORY_TABLE = "ChatHistory";
 export async function saveMessage({ userId, senderName = "", role, message, platform = "unknown"}) {
   try {
     const record = await base(CHAT_HISTORY_TABLE).create({
-      UserID: [{id: userId}], //userId,
-      Role: role,
-      Message: message,
-      Platform: platform,
-      Timestamp: new Date().toISOString() // Dùng định dạng ISO để Airtable hiểu
+      fields: {
+        UserID: [userId],
+        Role: role,
+        Message: message,
+        Platform: platform,
+        Timestamp: new Date().toISOString() // Dùng định dạng ISO để Airtable hiểu
+      }
     });
     console.log("✅ Saved message record:", record);
     return record;
