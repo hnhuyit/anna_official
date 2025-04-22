@@ -72,3 +72,18 @@ export async function handleAIReply(userId, userMessage, prompt, history, token,
     }
   }
 }
+
+export async function generateAIReply(userMessage, prompt, history, platform = "zalo") {
+  try {
+    const aiReply = await askAI(userMessage, prompt, history, platform); // Gọi AI
+    return aiReply;
+  } catch (err) {
+    console.error("❌ Lỗi phản hồi AI:", err.message);
+
+    const fallbackMsg = err.message.includes("429") || err.message.includes("quota")
+      ? "⚠️ Hệ thống AI đang quá tải. Nhân viên sẽ hỗ trợ bạn trong ít phút."
+      : "⚠️ Xin lỗi, hiện tại hệ thống đang gặp sự cố. Vui lòng thử lại sau.";
+
+    return fallbackMsg;
+  }
+}

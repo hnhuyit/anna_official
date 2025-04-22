@@ -1,6 +1,6 @@
 // src/controllers/zalo.controller.js
 import { handleIGMessage, handleIGPostback } from "../services/instagramService.js";
-import { handleAIReply } from "../services/aiResponder.js";
+import { handleAIReply, generateAIReply } from "../services/aiResponder.js";
 import { replyToComment, replyMessenger, getFacebookCommentAvatar, getFacebookUserAvatar  } from "../services/facebookService.js";
 import { ensureUserExists, fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 import { saveMessage, getRecentMessages } from "../services/airtableService.js";
@@ -231,7 +231,8 @@ export async function handleFacebookWebhook(req, res, next) {
           const history = await getRecentMessages(senderId, platform);
 
           // 👉 Nếu bạn muốn phản hồi comment bằng AI hoặc gửi comment lại:
-          const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
+          // const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
+          const aiCommentReply = await generateAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
 
           await replyToComment(commentId, aiCommentReply, token); 
 
