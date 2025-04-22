@@ -1,8 +1,7 @@
 // src/controllers/zalo.controller.js
 import { handleIGMessage, handleIGPostback } from "../services/instagramService.js";
 import { handleAIReply } from "../services/aiResponder.js";
-import { replyMessenger  } from "../services/zaloService.js";
-import { replyToComment, getFacebookCommentAvatar, getFacebookUserAvatar  } from "../services/facebookService.js";
+import { replyToComment, replyMessenger, getFacebookCommentAvatar, getFacebookUserAvatar  } from "../services/facebookService.js";
 import { ensureUserExists, fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 import { saveMessage, getRecentMessages } from "../services/airtableService.js";
 // Các hàm lưu lịch sử, cập nhật Airtable, … có thể được chuyển vào một module riêng (ví dụ airtableService)

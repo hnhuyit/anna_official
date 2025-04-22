@@ -27,14 +27,19 @@ export async function replyToComment(commentId, message, accessToken) {
 
 export async function getFacebookCommentAvatar(fbid, pageAccessToken) {
   try {
-    const res = await axios.get(`https://graph.facebook.com/${fbid}`, {
+    const res = await axios.get(`https://graph.facebook.com/${fbid}/picture`, {
       params: {
-        fields: "picture",
+        width: 500,
+        height: 500,
+        redirect: false,
         access_token: pageAccessToken,
       },
     });
 
-    return res.data?.picture?.data?.url || null;
+    const data = res.data?.data;
+    if (data?.is_silhouette) return null; // Nếu là avatar mặc định
+
+    return data?.url || null;
   } catch (error) {
     console.error("❌ Lỗi lấy avatar comment:", error.response?.data || error.message);
     return null;
@@ -43,16 +48,41 @@ export async function getFacebookCommentAvatar(fbid, pageAccessToken) {
 
 export async function getFacebookUserAvatar(psid, pageAccessToken) {
   try {
-    const res = await axios.get(`https://graph.facebook.com/${psid}`, {
+    const res = await axios.get(`https://graph.facebook.com/${psid}/picture`, {
       params: {
-        fields: "profile_pic",
+        width: 500,
+        height: 500,
+        redirect: false,
         access_token: pageAccessToken,
       },
     });
 
-    return res.data?.profile_pic || null;
+    const data = res.data?.data;
+    if (data?.is_silhouette) return null;
+
+    return data?.url || null;
   } catch (error) {
     console.error("❌ Lỗi lấy avatar Messenger:", error.response?.data || error.message);
     return null;
+  }
+}
+
+export async function replyMessenger(sender_psid, text, token) {
+  const body = {
+    recipient: { id: sender_psid },
+    messaging_type: "RESPONSE",
+    message: { text }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v22.0/me/messages?access_token=${token}`,
+      body
+    );
+    console.log("📩 Đã gửi tin nhắn Messenger:", res.data);
+    return res.data; // ✅ Trả về kết quả gửi
+  } catch (err) {
+    console.error("❌ Lỗi gửi tin nhắn Messenger:", err.response?.data || err.message);
+    throw err;
   }
 }

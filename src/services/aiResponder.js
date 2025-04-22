@@ -1,7 +1,8 @@
 // src/services/aiResponder.js
 
 import { askAI } from "./aiService.js";
-import { replyZalo, replyMessenger } from "./zaloService.js";
+import { replyZalo } from "./zaloService.js";
+import { replyMessenger } from "./facebookService.js";
 import { fetchConfigFromAirtable} from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 
 /**
