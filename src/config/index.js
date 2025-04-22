@@ -162,8 +162,7 @@ export async function ensureUserExists(userId, userName, avatarUrl, event_name, 
     }
   }]);
   // console.log("✅ Đã tạo mới user:", userId, newRecord);
-
-  return newRecord.id;
+  return newRecord[0].id;
 }
 
 // Thêm default export cho toàn bộ config nếu cần
