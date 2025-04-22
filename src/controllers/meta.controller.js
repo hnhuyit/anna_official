@@ -233,7 +233,7 @@ export async function handleFacebookWebhook(req, res, next) {
 
           // 👉 Nếu bạn muốn phản hồi comment bằng AI hoặc gửi comment lại:
           // const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
-          const aiCommentReply = await generateAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
+          const aiCommentReply = await generateAIReply(message, SYSTEM_PROMPT, history, platform);
 
           await replyToComment(commentId, aiCommentReply, token); 
 
