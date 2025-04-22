@@ -229,6 +229,7 @@ export async function handleFacebookWebhook(req, res, next) {
 
           // Lấy lịch sử
           const history = await getRecentMessages(senderId, platform);
+          console.log("history: ", history)
 
           // 👉 Nếu bạn muốn phản hồi comment bằng AI hoặc gửi comment lại:
           // const aiCommentReply = await handleAIReply(senderId, message, SYSTEM_PROMPT, history, token, platform);
