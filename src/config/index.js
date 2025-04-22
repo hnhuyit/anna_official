@@ -161,7 +161,7 @@ export async function ensureUserExists(userId, userName, avatarUrl, event_name, 
       LastInteraction: todayISOString,
     }
   }]);
-  console.log("✅ Đã tạo mới user:", userId, newRecord);
+  // console.log("✅ Đã tạo mới user:", userId, newRecord);
 
   return newRecord.id;
 }
