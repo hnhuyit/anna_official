@@ -55,6 +55,7 @@ export async function askAI(message, prompt, history, platform = "zalo") {
     ...cleanHistory,
     { role: "user", content: message }
   ];
+  console.log("promt: ", messages)
 
   const res = await openai.chat.completions.create({
     model: "gpt-4o-mini",
