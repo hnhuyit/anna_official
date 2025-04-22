@@ -2,7 +2,7 @@
 import { handleIGMessage, handleIGPostback } from "../services/instagramService.js";
 import { handleAIReply } from "../services/aiResponder.js";
 import { replyMessenger  } from "../services/zaloService.js";
-import { replyToComment  } from "../services/facebookService.js";
+import { replyToComment, getFacebookCommentAvatar, getFacebookUserAvatar  } from "../services/facebookService.js";
 import { ensureUserExists, fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 import { saveMessage, getRecentMessages } from "../services/airtableService.js";
 // Các hàm lưu lịch sử, cập nhật Airtable, … có thể được chuyển vào một module riêng (ví dụ airtableService)
@@ -100,6 +100,11 @@ export async function handleFacebookWebhook(req, res, next) {
         const senderName = webhook_event.sender?.name;
         const message = webhook_event?.message;
 
+        let avatarUrl = null;
+        if (sender_psid) {
+          avatarUrl = await getFacebookUserAvatar(sender_psid, token); // 👈 Gọi hàm lấy avatar
+        }
+
         // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
         if (!sender_psid || sender_psid === pageId) {
           console.log("⏭️ Bỏ qua event từ chính page bot hoặc thiếu sender.");
@@ -118,7 +123,7 @@ export async function handleFacebookWebhook(req, res, next) {
           console.log(`📥 Messenger > User gửi: "${userMessage}"`);
 
           // Đảm bảo user tồn tại trong Conversation
-          const conversationId = await ensureUserExists(sender_psid, senderName, "message_received", platform);
+          const conversationId = await ensureUserExists(sender_psid, senderName, avatarUrl, "message_received", platform);
           console.log("conversationId", conversationId)
 
           // Lưu tin nhắn người dùng
@@ -172,7 +177,11 @@ export async function handleFacebookWebhook(req, res, next) {
           const senderId = value.from?.id;
           const senderName = value.from?.name;
           const message = value.message;
-
+          
+          let avatarUrl = null;
+          if (senderId) {
+            avatarUrl = await getFacebookCommentAvatar(senderId, token); // 👈 Gọi hàm lấy avatar
+          }
           
           // ❌ Nếu là comment trả lời (reply) → bỏ qua
           if (parentId !== postId) {
@@ -205,7 +214,7 @@ export async function handleFacebookWebhook(req, res, next) {
           
           // Đảm bảo user tồn tại trong Conversation
           // const conversationId = await ensureUserExists(senderId, platform, senderName);
-          const conversationId = await ensureUserExists(senderId, senderName, "comment_received", platform);
+          const conversationId = await ensureUserExists(senderId, senderName, avatarUrl, "comment_received", platform);
           
           // console.log("conversationId", conversationId)
           await saveMessage({

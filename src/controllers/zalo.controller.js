@@ -36,7 +36,7 @@ export async function handleZaloWebhook(req, res, next) {
 
     // Đảm bảo user tồn tại trong Conversation
     // const conversationId = await ensureUserExists(userId, platform, "");
-    const conversationId = await ensureUserExists(userId, "", event_name, platform);
+    const conversationId = await ensureUserExists(userId, "", "", event_name, platform);
 
     // Lưu lịch sử tin nhắn, cập nhật interaction nếu cần (bạn có thể tách riêng sang airtableService)
     await saveMessage({ conversationId, senderName: "", role: "user", message: userMessage, platform });

@@ -134,7 +134,7 @@ export async function updateLastInteractionOnlyIfNewDay(userId, userName = "", e
   }
 }
 
-export async function ensureUserExists(userId, userName, event_name, platform = "unknown") {
+export async function ensureUserExists(userId, userName, avatarUrl, event_name, platform = "unknown") {
   
   const todayISOString = new Date().toISOString();
   const platformTag = platform.toLowerCase();
@@ -155,6 +155,7 @@ export async function ensureUserExists(userId, userName, event_name, platform = 
     fields: {
       UserID: userId,
       Name: userName || "(Unknown)",
+      avatarUrl: [{ url: avatarUrl }],
       platform: platformTag,
       event_name: event_name,
       LastInteraction: todayISOString,

@@ -47,3 +47,20 @@ export async function replyMessenger(sender_psid, text, token) {
     throw err;
   }
 }
+
+// api server phải ở Việt Nam
+export async function getZaloAvatar(zaloId, accessToken) {
+  try {
+    const res = await axios.get("https://openapi.zalo.me/v2.0/oa/getprofile", {
+      params: {
+        data: JSON.stringify({ user_id: zaloId }),
+        access_token: accessToken,
+      },
+    });
+
+    return res.data?.data?.avatar || null;
+  } catch (error) {
+    console.error("❌ Lỗi lấy avatar Zalo:", error.response?.data || error.message);
+    return null;
+  }
+}

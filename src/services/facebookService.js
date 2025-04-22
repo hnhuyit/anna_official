@@ -24,3 +24,35 @@ export async function replyToComment(commentId, message, accessToken) {
     console.error("❌ Lỗi khi phản hồi comment:", err.response?.data || err.message);
   }
 }
+
+export async function getFacebookCommentAvatar(fbid, pageAccessToken) {
+  try {
+    const res = await axios.get(`https://graph.facebook.com/${fbid}`, {
+      params: {
+        fields: "picture",
+        access_token: pageAccessToken,
+      },
+    });
+
+    return res.data?.picture?.data?.url || null;
+  } catch (error) {
+    console.error("❌ Lỗi lấy avatar comment:", error.response?.data || error.message);
+    return null;
+  }
+}
+
+export async function getFacebookUserAvatar(psid, pageAccessToken) {
+  try {
+    const res = await axios.get(`https://graph.facebook.com/${psid}`, {
+      params: {
+        fields: "profile_pic",
+        access_token: pageAccessToken,
+      },
+    });
+
+    return res.data?.profile_pic || null;
+  } catch (error) {
+    console.error("❌ Lỗi lấy avatar Messenger:", error.response?.data || error.message);
+    return null;
+  }
+}
