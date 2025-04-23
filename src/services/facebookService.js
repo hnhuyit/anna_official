@@ -72,6 +72,23 @@ export async function getFacebookUserAvatar(psid, pageAccessToken) {
   }
 }
 
+export async function getFacebookUserProfile(psid, pageAccessToken) {
+  try {
+    const res = await axios.get(`https://graph.facebook.com/${psid}`, {
+      params: {
+        fields: "first_name,last_name",
+        access_token: pageAccessToken,
+      },
+    });
+
+    const { first_name, last_name } = res.data;
+    return `${first_name || ""} ${last_name || ""}`.trim();
+  } catch (err) {
+    console.warn("⚠️ Không thể lấy tên người dùng:", err.response?.data || err.message);
+    return "(Unknown)";
+  }
+}
+
 // export async function getUserAvatarUrlFromContext(context, pageAccessToken) {
 //   try {
 //     if (context.object !== 'page') return null;
