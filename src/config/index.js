@@ -138,6 +138,7 @@ export async function ensureUserExists(userId, userName, avatarUrl = "", event_n
   
   const todayISOString = new Date().toISOString();
   const platformTag = platform.toLowerCase();
+  const avatar = avatarUrl ? [{ url: avatarUrl }] : undefined;
   
   const formula = `AND({UserID} = '${userId}', {platform} = '${platformTag}')`;
 
@@ -156,12 +157,13 @@ export async function ensureUserExists(userId, userName, avatarUrl = "", event_n
       UserID: userId,
       Name: userName || "(Unknown)",
       // avatarUrl: [{ url: avatarUrl }],
+      avatarUrl: avatar, // field kiểu Attachment
       platform: platformTag,
       event_name: event_name,
       LastInteraction: todayISOString,
     }
   }]);
-  // console.log("✅ Đã tạo mới user:", userId, newRecord);
+  console.log("✅ Đã tạo mới user:", userId, platformTag );
   return newRecord[0].id;
 }
 

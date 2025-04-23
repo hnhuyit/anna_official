@@ -1,7 +1,7 @@
 // src/controllers/zalo.controller.js
 import { handleIGMessage, handleIGPostback } from "../services/instagramService.js";
 import { handleAIReply, generateAIReply } from "../services/aiResponder.js";
-import { replyToComment, replyMessenger, getFacebookCommentAvatar, getFacebookUserAvatar  } from "../services/facebookService.js";
+import { replyToComment, replyMessenger, getFacebookCommentAvatar, getFacebookUserAvatar, getUserAvatarUrlFromContext } from "../services/facebookService.js";
 import { ensureUserExists, fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 import { saveMessage, getRecentMessages } from "../services/airtableService.js";
 // Các hàm lưu lịch sử, cập nhật Airtable, … có thể được chuyển vào một module riêng (ví dụ airtableService)
@@ -89,6 +89,14 @@ export async function handleFacebookWebhook(req, res, next) {
     const pageId = config.pageId;
     const platform = "facebook";
 
+    // let avatarUrl = null;
+    // try {
+    //   avatarUrl = await getUserAvatarUrlFromContext(body, token);
+    // } catch (err) {
+    //   console.error("⚠️ Lỗi lấy avatar từ context:", err.message || err);
+    //   avatarUrl = null; // fallback an toàn
+    // }
+
     for (const entry of body.entry) {
       const webhook_event = entry.messaging?.[0];
       const changes = entry.changes || [];
@@ -98,11 +106,6 @@ export async function handleFacebookWebhook(req, res, next) {
         const sender_psid = webhook_event?.sender?.id;
         const senderName = webhook_event.sender?.name;
         const message = webhook_event?.message;
-
-        let avatarUrl = null;
-        if (sender_psid) {
-          avatarUrl = await getFacebookUserAvatar(sender_psid, token); // 👈 Gọi hàm lấy avatar
-        }
 
         // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
         if (!sender_psid || sender_psid === pageId) {
@@ -114,6 +117,14 @@ export async function handleFacebookWebhook(req, res, next) {
         if (config.bot_status !== "active") {
           console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
           return res.sendStatus(200);
+        }
+
+        // ✅ Lấy avatar riêng cho message entry này
+        let avatarUrl = null;
+        try {
+          avatarUrl = await getFacebookUserAvatar(sender_psid, token);
+        } catch (err) {
+          console.error("⚠️ Lỗi lấy avatar Messenger:", err.message || err);
         }
 
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
@@ -177,11 +188,6 @@ export async function handleFacebookWebhook(req, res, next) {
           const senderName = value.from?.name;
           const message = value.message;
           
-          let avatarUrl = null;
-          if (senderId) {
-            avatarUrl = await getFacebookCommentAvatar(senderId, token); // 👈 Gọi hàm lấy avatar
-          }
-          
           // ❌ Nếu là comment trả lời (reply) → bỏ qua
           if (parentId !== postId) {
             console.log("⏭️ Bỏ qua comment reply (comment cấp 2):", commentId);
@@ -200,8 +206,13 @@ export async function handleFacebookWebhook(req, res, next) {
             continue;
           }
 
-          // ✅ Còn lại là comment từ người dùng
-          // console.log("💬 Comment người dùng:", message, PAGE_ID, senderId, value);
+          // ✅ Lấy avatar riêng cho comment này
+          let avatarUrl = null;
+          try {
+            avatarUrl = await getFacebookUserAvatar(senderId, token);
+          } catch (err) {
+            console.error("⚠️ Lỗi lấy avatar comment:", err.message || err);
+          }
 
           console.log("💬 Comment mới:", {
             senderId,

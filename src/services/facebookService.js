@@ -67,6 +67,28 @@ export async function getFacebookUserAvatar(psid, pageAccessToken) {
   }
 }
 
+// export async function getUserAvatarUrlFromContext(context, pageAccessToken) {
+//   try {
+//     if (context.object !== 'page') return null;
+
+//     for (const entry of context.entry) {
+//       const messaging = entry.messaging?.[0];
+//       if (messaging?.sender?.id) {
+//         return await getFacebookUserAvatar(messaging.sender.id, pageAccessToken);
+//       }
+
+//       const change = entry.changes?.[0];
+//       if (change?.value?.from?.id) {
+//         return await getFacebookUserAvatar(change.value.from.id, pageAccessToken);
+//       }
+//     }
+//   } catch (err) {
+//     console.error("🚫 Lỗi phân loại context avatar:", err.message);
+//   }
+
+//   return null;
+// }
+
 export async function replyMessenger(sender_psid, text, token) {
   const body = {
     recipient: { id: sender_psid },
