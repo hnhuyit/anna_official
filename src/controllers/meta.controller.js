@@ -207,12 +207,12 @@ export async function handleFacebookWebhook(req, res, next) {
           }
 
           // ✅ Lấy avatar riêng cho comment này
-          let avatarUrl = null;
-          try {
-            avatarUrl = await getFacebookUserAvatar(senderId, token);
-          } catch (err) {
-            console.error("⚠️ Lỗi lấy avatar comment:", err.message || err);
-          }
+          // let avatarUrl = null;
+          // try {
+          //   avatarUrl = await getFacebookUserAvatar(senderId, token);
+          // } catch (err) {
+          //   console.error("⚠️ Lỗi lấy avatar comment:", err.message || err);
+          // }
 
           console.log("💬 Comment mới:", {
             senderId,
@@ -224,7 +224,7 @@ export async function handleFacebookWebhook(req, res, next) {
           
           // Đảm bảo user tồn tại trong Conversation
           // const conversationId = await ensureUserExists(senderId, platform, senderName);
-          const conversationId = await ensureUserExists(senderId, senderName, avatarUrl, "comment_received", platform);
+          const conversationId = await ensureUserExists(senderId, senderName, "", "comment_received", platform);
           
           // console.log("conversationId", conversationId)
           await saveMessage({
