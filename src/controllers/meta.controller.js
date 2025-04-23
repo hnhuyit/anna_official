@@ -130,7 +130,7 @@ export async function handleFacebookWebhook(req, res, next) {
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
         if (message?.text) {
           const userMessage = message.text;
-          console.log(`📥 Messenger > User gửi: "${userMessage}"`);
+          console.log(`📥 Messenger > User gửi: "${userMessage}" > ${sender_psid} > ${senderName}`);
 
           // Đảm bảo user tồn tại trong Conversation
           const conversationId = await ensureUserExists(sender_psid, senderName, avatarUrl, "message_received", platform);
