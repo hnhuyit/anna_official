@@ -99,7 +99,7 @@ export async function handleFacebookWebhook(req, res, next) {
         const senderName = webhook_event.sender?.name;
         const message = webhook_event?.message;
 
-        let avatarUrl = "";
+        let avatarUrl = null;
         if (sender_psid) {
           avatarUrl = await getFacebookUserAvatar(sender_psid, token); // 👈 Gọi hàm lấy avatar
         }
@@ -177,7 +177,7 @@ export async function handleFacebookWebhook(req, res, next) {
           const senderName = value.from?.name;
           const message = value.message;
           
-          let avatarUrl = "";
+          let avatarUrl = null;
           if (senderId) {
             avatarUrl = await getFacebookCommentAvatar(senderId, token); // 👈 Gọi hàm lấy avatar
           }
