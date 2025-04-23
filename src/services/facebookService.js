@@ -48,43 +48,56 @@ export async function getFacebookCommentAvatar(fbid, pageAccessToken) {
 
 export async function getFacebookUserAvatar(psid, pageAccessToken) {
   try {
-    const res = await axios.get(`https://graph.facebook.com/${psid}/picture`, {
+    const response = await axios.get(`https://graph.facebook.com/v19.0/${psid}/picture`, {
       params: {
         width: 500,
         height: 500,
-        redirect: false,
+        redirect: false, // Lấy JSON thay vì redirect ảnh
         access_token: pageAccessToken,
       },
     });
 
-    const data = res.data?.data;
-    if (data?.is_silhouette) return null;
+    const data = response.data?.data;
+
+    // ❌ Avatar mặc định (silhouette) → bỏ qua
+    if (data?.is_silhouette) {
+      console.warn(`⚠️ PSID ${psid} có ảnh mặc định (silhouette).`);
+      return null;
+    }
 
     return data?.url || null;
-  } catch (error) {
-    const fbError = error?.response?.data?.error;
+  } catch (err) {
+    const fbError = err?.response?.data?.error;
+
     if (fbError?.code === 100 && fbError?.error_subcode === 33) {
-      console.warn(`⚠️ Không thể truy cập avatar người dùng ${psid} (không đủ quyền hoặc chưa nhắn tin)`);
+      console.warn(`⚠️ Không thể truy cập avatar người dùng ${psid} (không đủ quyền hoặc chưa nhắn tin).`);
     } else {
-      console.error("❌ Lỗi khác khi lấy avatar:", fbError || error.message);
+      console.error("❌ Lỗi lấy avatar Messenger:", fbError || err.message);
     }
-    return null;
+
+    return null; // fallback nếu lỗi
   }
 }
 
 export async function getFacebookUserProfile(psid, pageAccessToken) {
   try {
-    const res = await axios.get(`https://graph.facebook.com/${psid}`, {
+    const response = await axios.get(`https://graph.facebook.com/v19.0/${psid}`, {
       params: {
-        fields: "first_name,last_name",
+        fields: "name,first_name,last_name",
         access_token: pageAccessToken,
       },
     });
 
-    const { first_name, last_name } = res.data;
-    return `${first_name || ""} ${last_name || ""}`.trim();
+    const { name, first_name, last_name } = response.data;
+
+    // Ưu tiên dùng full name nếu có
+    if (name) return name.trim();
+    if (first_name || last_name) return `${first_name || ""} ${last_name || ""}`.trim();
+
+    return "(Unknown)";
   } catch (err) {
-    console.warn("⚠️ Không thể lấy tên người dùng:", err.response?.data || err.message);
+    const fbError = err?.response?.data?.error;
+    console.warn("⚠️ Không thể lấy tên người dùng:", fbError || err.message);
     return "(Unknown)";
   }
 }

@@ -156,7 +156,7 @@ export async function handleFacebookWebhook(req, res, next) {
           });
 
           // ✅ Lưu lần tương tác gần nhất
-          await updateLastInteractionOnlyIfNewDay(sender_psid, senderName, "message_received", platform);
+          // await updateLastInteractionOnlyIfNewDay(sender_psid, senderName, "message_received", platform);
 
           // Lấy lịch sử
           const history = await getRecentMessages(sender_psid, platform);
