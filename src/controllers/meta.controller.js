@@ -224,19 +224,19 @@ export async function handleFacebookWebhook(req, res, next) {
           
           // Đảm bảo user tồn tại trong Conversation
           // const conversationId = await ensureUserExists(senderId, platform, senderName);
-          const conversationId = await ensureUserExists(senderId, senderName, "", "comment_received", platform);
+          // const conversationId = await ensureUserExists(senderId, senderName, "", "comment_received", platform);
           
-          // console.log("conversationId", conversationId)
-          await saveMessage({
-            userId: conversationId,
-            senderName: senderName,
-            role: "user",
-            message,
-            platform,
-            interactionType: true
-          });
+          // // console.log("conversationId", conversationId)
+          // await saveMessage({
+          //   userId: conversationId,
+          //   senderName: senderName,
+          //   role: "user",
+          //   message,
+          //   platform,
+          //   interactionType: true
+          // });
 
-          await updateLastInteractionOnlyIfNewDay(senderId, senderName, "comment_received", platform);
+          // await updateLastInteractionOnlyIfNewDay(senderId, senderName, "comment_received", platform);
 
           // Lấy lịch sử
           const history = await getRecentMessages(senderId, platform);
@@ -248,15 +248,15 @@ export async function handleFacebookWebhook(req, res, next) {
 
           await replyToComment(commentId, aiCommentReply, token); 
 
-          // Lưu phản hồi AI
-          await saveMessage({
-            userId: conversationId,
-            senderName: senderName,
-            role: "assistant",
-            message: aiCommentReply,
-            platform,
-            interactionType: true
-          });
+          // // Lưu phản hồi AI
+          // await saveMessage({
+          //   userId: conversationId,
+          //   senderName: senderName,
+          //   role: "assistant",
+          //   message: aiCommentReply,
+          //   platform,
+          //   interactionType: true
+          // });
 
         }
       }

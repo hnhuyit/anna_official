@@ -62,7 +62,12 @@ export async function getFacebookUserAvatar(psid, pageAccessToken) {
 
     return data?.url || null;
   } catch (error) {
-    console.error("❌ Lỗi lấy avatar Messenger:", error.response?.data || error.message);
+    const fbError = error?.response?.data?.error;
+    if (fbError?.code === 100 && fbError?.error_subcode === 33) {
+      console.warn(`⚠️ Không thể truy cập avatar người dùng ${psid} (không đủ quyền hoặc chưa nhắn tin)`);
+    } else {
+      console.error("❌ Lỗi khác khi lấy avatar:", fbError || error.message);
+    }
     return null;
   }
 }
