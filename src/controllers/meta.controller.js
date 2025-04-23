@@ -130,7 +130,7 @@ export async function handleFacebookWebhook(req, res, next) {
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
         if (message?.text) {
           const userMessage = message.text;
-          console.log(`📥 Messenger > User gửi: "${userMessage}" > ${sender_psid} > ${senderName}`);
+          console.log(`📥 Messenger > User gửi: "${webhook_event}" > ${sender_psid} > ${senderName}`);
 
           // Đảm bảo user tồn tại trong Conversation
           const conversationId = await ensureUserExists(sender_psid, senderName, avatarUrl, "message_received", platform);
@@ -178,6 +178,7 @@ export async function handleFacebookWebhook(req, res, next) {
       // ✅ Xử lý comment từ bài viết (feed webhook)
       for (const change of changes) {
         const value = change.value;
+        
 
         if (change.field === "feed" && value.item === "comment" && value.verb === "add") {
           const commentId = value.comment_id;
@@ -187,6 +188,8 @@ export async function handleFacebookWebhook(req, res, next) {
           const senderId = value.from?.id;
           const senderName = value.from?.name;
           const message = value.message;
+          
+          console.log(`📥 comment > User gửi: "${value}" > ${senderId} > ${senderName}`);
           
           // ❌ Nếu là comment trả lời (reply) → bỏ qua
           if (parentId !== postId) {
