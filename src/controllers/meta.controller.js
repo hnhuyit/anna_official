@@ -164,6 +164,12 @@ export async function handleFacebookWebhook(req, res, next) {
           const userMessage = message.text.trim();
           console.log(`📥 Messenger > User gửi: "${userMessage}" > ${sender_psid} > ${senderName}`);
           
+
+          // Đảm bảo user tồn tại trong Conversation
+          const conversationId = await ensureUserExists(sender_psid, senderName, avatarUrl, "message_received", platform);
+          console.log("conversationId", conversationId)
+
+          
           // ✅ Check và xử lý số điện thoại nếu có
           const foundPhones = await extractPhonesFromText(userMessage.trim());
           console.log(`foundPhones: ${foundPhones}`);
@@ -173,15 +179,12 @@ export async function handleFacebookWebhook(req, res, next) {
               userId: sender_psid,
               phones: foundPhones,
               message: userMessage,
-              platform
+              platform,
+              link: conversationId
             });
           } else {
             console.warn("⛔ Không có số điện thoại hợp lệ được tìm thấy.");
           }
-
-          // Đảm bảo user tồn tại trong Conversation
-          const conversationId = await ensureUserExists(sender_psid, senderName, avatarUrl, "message_received", platform);
-          console.log("conversationId", conversationId)
 
           // Lưu tin nhắn người dùng
           await saveMessage({
