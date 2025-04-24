@@ -166,14 +166,17 @@ export async function handleFacebookWebhook(req, res, next) {
           
           // ✅ Check và xử lý số điện thoại nếu có
           const foundPhones = extractPhonesFromText(userMessage);
+          console.log(`foundPhones: ${foundPhones}`);
           
-          if (foundPhones.length > 0) {
+          if (Array.isArray(foundPhones) && foundPhones.length > 0) {
             await notifyPhoneDetected({
               userId: sender_psid,
               phones: foundPhones,
               message: userMessage,
               platform
             });
+          } else {
+            console.warn("⛔ Không có số điện thoại hợp lệ được tìm thấy.");
           }
 
           // Đảm bảo user tồn tại trong Conversation
