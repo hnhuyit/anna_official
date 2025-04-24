@@ -165,7 +165,7 @@ export async function handleFacebookWebhook(req, res, next) {
           console.log(`📥 Messenger > User gửi: "${userMessage}" > ${sender_psid} > ${senderName}`);
           
           // ✅ Check và xử lý số điện thoại nếu có
-          const foundPhones = extractPhonesFromText(userMessage);
+          const foundPhones = await extractPhonesFromText(userMessage.trim());
           console.log(`foundPhones: ${foundPhones}`);
           
           if (Array.isArray(foundPhones) && foundPhones.length > 0) {
