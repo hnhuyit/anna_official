@@ -105,19 +105,44 @@ export async function handleFacebookWebhook(req, res, next) {
       if (webhook_event) {
         const sender_psid = webhook_event?.sender?.id;
         // const senderName = webhook_event?.sender?.name;
+        const recipient = webhook_event.recipient
         const message = webhook_event?.message;
 
-        // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
-        if (!sender_psid || sender_psid === pageId) {
-          console.log("⏭️ Bỏ qua event từ chính page bot hoặc thiếu sender.");
+        // // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
+        // if (!sender_psid || sender_psid === pageId) {
+        //   console.log("⏭️ Bỏ qua event từ chính page bot hoặc thiếu sender.");
+        //   continue;
+        // }
+        
+        if (!sender_psid) {
+          console.log("⏭️ Bỏ qua vì thiếu sender.");
           continue;
         }
-        
-        // Kiểm tra trạng thái bot
-        if (config.bot_status !== "active") {
-          console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
-          return res.sendStatus(200);
+
+        // ✅ Nếu là nhân viên page gửi tin → vẫn lưu
+        if (sender_psid === pageId) {
+          const messageText = message?.text || "(Không phải dạng text)";
+          console.log("👨‍💻 Nhân viên trực tiếp gửi tin qua fanpage:", messageText);
+
+          // Gán giả danh để lưu
+          const conversationId = await ensureUserExists(recipient.id, "(Khách hàng không xác định)", null, "staff_message", platform);
+
+          await saveMessage({
+            userId: conversationId,
+            senderName: "Page Admin",
+            role: "human",
+            message: messageText,
+            platform
+          });
+
+          continue; // Không xử lý AI cho message này
         }
+
+        // // Kiểm tra trạng thái bot
+        // if (config.bot_status !== "active") {
+        //   console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
+        //   return res.sendStatus(200);
+        // }
 
         // ✅ Lấy avatar riêng cho message entry này
         let avatarUrl = null;
@@ -161,24 +186,51 @@ export async function handleFacebookWebhook(req, res, next) {
           // Lấy lịch sử
           const history = await getRecentMessages(sender_psid, platform);
 
-          // Gọi AI và gửi phản hồi
-          const aiReply = await handleAIReply(
-            sender_psid,
-            userMessage,
-            SYSTEM_PROMPT,
-            history,
-            token,
-            platform
-          );
+          // ⚠️ Chỉ phản hồi nếu bot đang bật
+          if (config.bot_status === "active") {
+            try {
+              const aiReply = await handleAIReply(
+                sender_psid,
+                userMessage,
+                SYSTEM_PROMPT,
+                history,
+                token,
+                platform
+              );
 
-          // Lưu phản hồi AI
-          await saveMessage({
-            userId: conversationId,
-            senderName: senderName,
-            role: "assistant",
-            message: aiReply,
-            platform
-          });
+              // Lưu phản hồi AI
+              await saveMessage({
+                userId: conversationId,
+                senderName: senderName,
+                role: "assistant",
+                message: aiReply,
+                platform
+              });
+            } catch (err) {
+              console.error("❌ Lỗi khi gọi AI:", err.message || err);
+            }
+          } else {
+            console.log("🔕 Bot đang tắt - Không gửi phản hồi AI, nhưng đã lưu tin nhắn người dùng.");
+          }
+
+          // // Gọi AI và gửi phản hồi
+          // const aiReply = await handleAIReply(
+          //   sender_psid,
+          //   userMessage,
+          //   SYSTEM_PROMPT,
+          //   history,
+          //   token,
+          //   platform
+          // );
+
+          // // Lưu phản hồi AI
+          // await saveMessage({
+          //   userId: conversationId,
+          //   senderName: senderName,
+          //   role: "assistant",
+          //   message: aiReply,
+          //   platform
+          // });
         } else {
           // 🛑 Bỏ qua các loại tin nhắn không phải text
           console.log("📎 Bỏ qua message không phải text:", message);
