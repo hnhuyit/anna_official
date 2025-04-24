@@ -27,9 +27,12 @@ export async function sendZaloAlert(message) {
   
     try {
       const res = await axios.post(
-        "https://openapi.zalo.me/v3.0/oa/message/cs",
+        "https://openapi.zalo.me/v3.0/oa/group/message",
         {
-          recipient: { user_id: config.ADMIN_ZALO_USER_ID },
+          recipient: { 
+            // user_id: config.ADMIN_ZALO_USER_ID 
+            group_id: config.ADMIN_ZALO_USER_ID
+        },
           message: {
             text: message
           }
