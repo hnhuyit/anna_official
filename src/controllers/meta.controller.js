@@ -4,6 +4,8 @@ import { handleAIReply, generateAIReply } from "../services/aiResponder.js";
 import { replyToComment, replyMessenger, getFacebookCommentAvatar, getFacebookUserAvatar, getFacebookUserProfile } from "../services/facebookService.js";
 import { ensureUserExists, fetchConfigFromAirtable, updateLastInteractionOnlyIfNewDay } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
 import { saveMessage, getRecentMessages } from "../services/airtableService.js";
+import { extractPhonesFromText } from "../utils/phoneUtils.js";
+import { notifyPhoneDetected } from "../utils/notifyUtils.js";
 // Các hàm lưu lịch sử, cập nhật Airtable, … có thể được chuyển vào một module riêng (ví dụ airtableService)
 
 export async function verifyWebhookIG(req, res) {
@@ -105,7 +107,7 @@ export async function handleFacebookWebhook(req, res, next) {
       if (webhook_event) {
         const sender_psid = webhook_event?.sender?.id;
         // const senderName = webhook_event?.sender?.name;
-        const recipient = webhook_event.recipient
+        // const recipient = webhook_event.recipient
         const message = webhook_event?.message;
         console.log("webhook_event: ", webhook_event);
 
@@ -159,8 +161,20 @@ export async function handleFacebookWebhook(req, res, next) {
 
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
         if (message?.text) {
-          const userMessage = message.text;
+          const userMessage = message.text.trim();
           console.log(`📥 Messenger > User gửi: "${message}" > ${sender_psid} > ${senderName}`);
+          
+          // ✅ Check và xử lý số điện thoại nếu có
+          const foundPhones = extractPhonesFromText(userMessage);
+          
+          if (foundPhones.length > 0) {
+            await notifyPhoneDetected({
+              userId: sender_psid,
+              phones: foundPhones,
+              message: userMessage,
+              platform
+            });
+          }
 
           // Đảm bảo user tồn tại trong Conversation
           const conversationId = await ensureUserExists(sender_psid, senderName, avatarUrl, "message_received", platform);

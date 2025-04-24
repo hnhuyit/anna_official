@@ -1,0 +1,41 @@
+// utils/notifyUtils.js
+import {  fetchConfigFromAirtable } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
+const config = await fetchConfigFromAirtable();
+
+// Gọi từ webhook để cảnh báo khi phát hiện số điện thoại
+export async function notifyPhoneDetected({ userId, phones, message, platform }) {
+    const alertText = `📞 [${platform}] User ${userId} gửi số: ${phones.join(", ")}\n💬 Nội dung: "${message}"`;
+    console.log(alertText);
+    
+    await sendZaloAlert(alertText);
+}
+
+// Gửi tin nhắn chủ động từ OA sang người dùng nội bộ (admin)
+export async function sendZaloAlert(message) {
+    if (!config.ZALO_ACCESS_TOKEN || !config.ADMIN_ZALO_USER_ID) {
+      console.warn("❗ Thiếu ZALO_ACCESS_TOKEN hoặc ADMIN_ZALO_USER_ID");
+      return;
+    }
+  
+    try {
+      const res = await axios.post(
+        "https://openapi.zalo.me/v3.0/oa/message",
+        {
+          recipient: { user_id: config.ADMIN_ZALO_USER_ID },
+          message: {
+            text: message
+          }
+        },
+        {
+          headers: {
+            access_token: config.ZALO_ACCESS_TOKEN,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+  
+      console.log("✅ Đã gửi tin nhắn cảnh báo Zalo:", res.data);
+    } catch (err) {
+      console.error("❌ Lỗi khi gửi tin nhắn OA Zalo:", err.response?.data || err.message);
+    }
+  }
