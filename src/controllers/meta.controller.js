@@ -115,6 +115,16 @@ export async function handleFacebookWebhook(req, res, next) {
         //   continue;
         // }
         
+        // ✅ Lấy avatar riêng cho message entry này
+        let avatarUrl = null;
+        try {
+          avatarUrl = await getFacebookUserAvatar(sender_psid, token);
+        } catch (err) {
+          console.error("⚠️ Lỗi lấy avatar Messenger:", err.message || err);
+        }
+
+        let senderName = "(Unknown)";
+        
         if (!sender_psid) {
           console.log("⏭️ Bỏ qua vì thiếu sender.");
           continue;
@@ -138,22 +148,6 @@ export async function handleFacebookWebhook(req, res, next) {
 
           continue; // Không xử lý AI cho message này
         }
-
-        // // Kiểm tra trạng thái bot
-        // if (config.bot_status !== "active") {
-        //   console.log("🚫 Bot đang tắt, không xử lý phản hồi.");
-        //   return res.sendStatus(200);
-        // }
-
-        // ✅ Lấy avatar riêng cho message entry này
-        let avatarUrl = null;
-        try {
-          avatarUrl = await getFacebookUserAvatar(sender_psid, token);
-        } catch (err) {
-          console.error("⚠️ Lỗi lấy avatar Messenger:", err.message || err);
-        }
-
-        let senderName = "(Unknown)";
 
         if (sender_psid) {
           try {
