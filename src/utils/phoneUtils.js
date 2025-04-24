@@ -15,6 +15,6 @@ export function extractPhonesFromText(text) {
     console.log("matches", matches)
     return matches
         .map(normalizePhoneVN)
-        .filter(phone => /^\+84[1-9][0-9]{8,9}$/.test(phone)); // Lọc đúng định dạng VN
+        .filter(phone => /^0[1-9][0-9]{8,9}$/.test(phone));
 }
   
