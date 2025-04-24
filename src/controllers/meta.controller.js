@@ -124,30 +124,30 @@ export async function handleFacebookWebhook(req, res, next) {
         }
 
         let senderName = "(Unknown)";
-        
+
         if (!sender_psid) {
           console.log("⏭️ Bỏ qua vì thiếu sender.");
           continue;
         }
 
-        // ✅ Nếu là nhân viên page gửi tin → vẫn lưu
-        if (sender_psid === pageId) {
-          const messageText = message?.text || "(Không phải dạng text)";
-          console.log("👨‍💻 Nhân viên trực tiếp gửi tin qua fanpage:", messageText);
+        // // ✅ Nếu là nhân viên page gửi tin → vẫn lưu
+        // if (sender_psid === pageId) {
+        //   const messageText = message?.text || "(Không phải dạng text)";
+        //   console.log("👨‍💻 Nhân viên trực tiếp gửi tin qua fanpage:", messageText);
 
-          // Gán giả danh để lưu
-          const conversationId = await ensureUserExists(recipient.id, "(Khách hàng không xác định)", null, "staff_message", platform);
+        //   // Gán giả danh để lưu
+        //   const conversationId = await ensureUserExists(recipient.id, "(Khách hàng không xác định)", null, "staff_message", platform);
 
-          await saveMessage({
-            userId: conversationId,
-            senderName: "Page Admin",
-            role: "human",
-            message: messageText,
-            platform
-          });
+        //   await saveMessage({
+        //     userId: conversationId,
+        //     senderName: "Page Admin",
+        //     role: "human",
+        //     message: messageText,
+        //     platform
+        //   });
 
-          continue; // Không xử lý AI cho message này
-        }
+        //   continue; // Không xử lý AI cho message này
+        // }
 
         if (sender_psid) {
           try {
@@ -236,7 +236,6 @@ export async function handleFacebookWebhook(req, res, next) {
       for (const change of changes) {
         const value = change.value;
         
-
         if (change.field === "feed" && value.item === "comment" && value.verb === "add") {
           const commentId = value.comment_id;
           const postId = value.post_id;
