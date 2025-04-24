@@ -1,7 +1,7 @@
 // utils/notifyUtils.js
 import axios from "axios";
 import {  fetchConfigFromAirtable } from "../config/index.js"; // Nếu bạn có gói logic refresh token vào config hoặc service riêng
-const config = await fetchConfigFromAirtable();
+
 
 // Gọi từ webhook để cảnh báo khi phát hiện số điện thoại
 export async function notifyPhoneDetected({ userId, phones, message, platform }) {
@@ -13,6 +13,8 @@ export async function notifyPhoneDetected({ userId, phones, message, platform })
 
 // Gửi tin nhắn chủ động từ OA sang người dùng nội bộ (admin)
 export async function sendZaloAlert(message) {
+    const config = await fetchConfigFromAirtable();
+
     if (!config.ZALO_ACCESS_TOKEN || !config.ADMIN_ZALO_USER_ID) {
       console.warn("❗ Thiếu ZALO_ACCESS_TOKEN hoặc ADMIN_ZALO_USER_ID");
       return;
@@ -29,7 +31,7 @@ export async function sendZaloAlert(message) {
         },
         {
           headers: {
-            "access_token": `Bearer ${config.ZALO_ACCESS_TOKEN}`,
+            Authorization: `Bearer ${config.ZALO_ACCESS_TOKEN}`,
             "Content-Type": "application/json"
           }
         }
