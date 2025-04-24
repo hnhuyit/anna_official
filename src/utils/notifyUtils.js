@@ -20,7 +20,7 @@ export async function sendZaloAlert(message) {
   
     try {
       const res = await axios.post(
-        "https://openapi.zalo.me/v3.0/oa/message",
+        "https://openapi.zalo.me/v3.0/oa/message/cs",
         {
           recipient: { user_id: config.ADMIN_ZALO_USER_ID },
           message: {
@@ -29,7 +29,7 @@ export async function sendZaloAlert(message) {
         },
         {
           headers: {
-            access_token: config.ZALO_ACCESS_TOKEN,
+            "access_token": config.ZALO_ACCESS_TOKEN,
             "Content-Type": "application/json"
           }
         }
