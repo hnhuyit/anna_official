@@ -10,11 +10,11 @@ export function normalizePhoneVN(phone) {
   
 // Hàm trích xuất số điện thoại Việt Nam từ tin nhắn
 export function extractPhonesFromText(text) {
-const phoneRegexVN = /(?:\+?84|0)?[\s\-\.]?\(?[1-9][0-9]{1}\)?[\s\-\.]?[0-9]{3}[\s\-\.]?[0-9]{3,4}/g;
-const matches = text.match(phoneRegexVN) || [];
+    const phoneRegexVN = /(?:\+?84|0)?[\s\-\.]?\(?[1-9][0-9]{1}\)?[\s\-\.]?[0-9]{3}[\s\-\.]?[0-9]{3,4}/g;
+    const matches = text.match(phoneRegexVN) || [];
 
-return matches
-    .map(normalizePhoneVN)
-    .filter(phone => /^\+84[1-9][0-9]{8,9}$/.test(phone)); // Lọc đúng định dạng VN
+    return matches
+        .map(normalizePhoneVN)
+        .filter(phone => /^\+84[1-9][0-9]{8,9}$/.test(phone)); // Lọc đúng định dạng VN
 }
   

@@ -29,14 +29,19 @@ export async function sendZaloAlert(message) {
         },
         {
           headers: {
-            "access_token": config.ZALO_ACCESS_TOKEN,
+            "access_token": `Bearer ${config.ZALO_ACCESS_TOKEN}`,
             "Content-Type": "application/json"
           }
         }
       );
-  
-      console.log("✅ Đã gửi tin nhắn cảnh báo Zalo:", res.data);
+
+      if (res.data.error !== 0) {
+        console.warn("⚠️ Zalo CS API phản hồi lỗi:", res.data);
+      } else {
+        console.log("✅ Đã gửi tin nhắn cảnh báo Zalo:", res.data);
+      }
+    //   console.log("✅ Đã gửi tin nhắn cảnh báo Zalo:", res.data);
     } catch (err) {
       console.error("❌ Lỗi khi gửi tin nhắn OA Zalo:", err.response?.data || err.message);
     }
-  }
+}

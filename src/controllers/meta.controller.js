@@ -162,7 +162,7 @@ export async function handleFacebookWebhook(req, res, next) {
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
         if (message?.text) {
           const userMessage = message.text.trim();
-          console.log(`📥 Messenger > User gửi: "${message}" > ${sender_psid} > ${senderName}`);
+          console.log(`📥 Messenger > User gửi: "${userMessage}" > ${sender_psid} > ${senderName}`);
           
           // ✅ Check và xử lý số điện thoại nếu có
           const foundPhones = extractPhonesFromText(userMessage);
