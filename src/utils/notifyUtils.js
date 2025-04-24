@@ -14,6 +14,7 @@ export async function notifyPhoneDetected({ userId, phones, message, platform })
 // Gửi tin nhắn chủ động từ OA sang người dùng nội bộ (admin)
 export async function sendZaloAlert(message) {
     const config = await fetchConfigFromAirtable();
+    console.log("zalo: ", config.ADMIN_ZALO_USER_ID, config.ZALO_ACCESS_TOKEN)
 
     if (!config.ZALO_ACCESS_TOKEN || !config.ADMIN_ZALO_USER_ID) {
       console.warn("❗ Thiếu ZALO_ACCESS_TOKEN hoặc ADMIN_ZALO_USER_ID");
