@@ -107,6 +107,7 @@ export async function handleFacebookWebhook(req, res, next) {
         // const senderName = webhook_event?.sender?.name;
         const recipient = webhook_event.recipient
         const message = webhook_event?.message;
+        console.log("webhook_event: ", webhook_event);
 
         // // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
         // if (!sender_psid || sender_psid === pageId) {
