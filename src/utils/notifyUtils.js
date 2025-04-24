@@ -31,7 +31,7 @@ export async function sendZaloAlert(message) {
         },
         {
           headers: {
-            Authorization: `Bearer ${config.ZALO_ACCESS_TOKEN}`,
+            "access_token": `Bearer ${config.ZALO_ACCESS_TOKEN}`,
             "Content-Type": "application/json"
           }
         }
