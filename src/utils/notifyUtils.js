@@ -6,8 +6,8 @@ import {  fetchConfigFromAirtable } from "../config/index.js"; // Nếu bạn c�
 // Gọi từ webhook để cảnh báo khi phát hiện số điện thoại
 export async function notifyPhoneDetected({ userId, phones, message, platform, link }) {
     const alertText = `📞 [${platform}] User ${userId} gửi số: ${phones.join(", ")}\n
-    💬 Nội dung: "${message}"\n
-    -----------------
+    💬 Nội dung: ${message}\n
+    -----------------\n
     Link: https://airtable.com/app2wbbC0HSYFi7Q2/pagpYGo9VyKueoHwr?Nvz36=${link}
     `;
     // console.log(alertText);

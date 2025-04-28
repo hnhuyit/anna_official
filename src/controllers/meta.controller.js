@@ -109,6 +109,12 @@ export async function handleFacebookWebhook(req, res, next) {
         // const senderName = webhook_event?.sender?.name;
         // const recipient = webhook_event.recipient
         const message = webhook_event?.message;
+
+        const postback = webhook_event?.postback;
+        const payload = postback?.payload;
+        const title = postback?.title;
+        console.log(`🔔 Người dùng bấm Postback: "${title}" | Payload: "${payload}" | sender_psid: ${sender_psid}`);
+
         console.log("webhook_event: ", webhook_event);
 
         // // ❌ Bỏ qua nếu không có sender hoặc sender là chính page bot
@@ -159,6 +165,61 @@ export async function handleFacebookWebhook(req, res, next) {
           }
         }
 
+        // ✅ Bắt sự kiện Postback
+        if (postback) {
+          // ✅ Đảm bảo user tồn tại
+          const conversationId = await ensureUserExists(sender_psid, "(Unknown)", "", "postback_received", platform);
+          console.log("conversationId (postback):", conversationId);
+
+          // ✅ Lưu sự kiện Postback như một tin nhắn từ người dùng
+          await saveMessage({
+            userId: conversationId,
+            senderName: "(Postback User)",
+            role: "user",
+            message: `[Postback] ${payload}`,
+            platform
+          });
+
+          // Lấy lịch sử
+          const history = await getRecentMessages(sender_psid, platform);
+
+          // ⚠️ Chỉ phản hồi nếu bot đang bật
+          if (config.bot_status === "active") {
+            try {
+              const aiReply = await handleAIReply(
+                sender_psid,
+                `[Postback] ${payload}`, //userMessage,
+                SYSTEM_PROMPT,
+                history,
+                token,
+                platform
+              );
+
+              // Lưu phản hồi AI
+              await saveMessage({
+                userId: conversationId,
+                senderName: senderName,
+                role: "assistant",
+                message: aiReply,
+                platform
+              });
+            } catch (err) {
+              console.error("❌ Lỗi khi gọi AI:", err.message || err);
+            }
+          } else {
+            console.log("🔕 Bot đang tắt - Không gửi phản hồi AI, nhưng đã lưu tin nhắn người dùng.");
+          }
+
+          // // ✅ Xử lý tuỳ chỉnh nếu cần theo từng loại payload
+          // if (payload === "REQUEST_CHAT_SUPPORT") {
+          //   // Gửi phản hồi AI hoặc text
+          //   await sendTextMessage(sender_psid, "🎯 Chào bạn! Hãy nhắn tin yêu cầu của bạn nhé, tư vấn viên sẽ hỗ trợ ngay!", token);
+          // } else if (payload === "USER_REGISTER_NOW") {
+          //   await sendTextMessage(sender_psid, "🎉 Cảm ơn bạn đã đăng ký! Đội ngũ của chúng tôi sẽ liên hệ ngay.", token);
+          // } else {
+          //   console.log("📝 Payload postback khác, chưa cấu hình xử lý chi tiết.");
+          // }
+        } else
         // ✅ Chỉ xử lý nếu là tin nhắn dạng text
         if (message?.text) {
           const userMessage = message.text.trim();
