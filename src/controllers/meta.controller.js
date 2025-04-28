@@ -176,7 +176,7 @@ export async function handleFacebookWebhook(req, res, next) {
             userId: conversationId,
             senderName: "(Postback User)",
             role: "user",
-            message: `[Postback] ${payload}`,
+            message: `[Postback] ${title}`,
             platform
           });
 
@@ -188,7 +188,7 @@ export async function handleFacebookWebhook(req, res, next) {
             try {
               const aiReply = await handleAIReply(
                 sender_psid,
-                `[Postback] ${payload}`, //userMessage,
+                `[Postback] ${title}`, //userMessage,
                 SYSTEM_PROMPT,
                 history,
                 token,
